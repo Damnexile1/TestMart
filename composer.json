@@ -1,0 +1,13 @@
+{
+  "name": "damneixle/dish-builder",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "require": {
+    "ext-json": "*",
+    "ext-mysqli": "*",
+    "vlucas/phpdotenv": "^5.5"
+  }
+}
