@@ -24,16 +24,9 @@ final class DishBuilder
     public function buildDishes()
     {
         $ingredients = $this->getIngridients();
-
-        //Не смог сделать гибким код, получилась жоская привязка к тому, что мы знаем какие у нас точно ингридиенты :((((((
-        //TODO можем обсудить как это решить)
-        $ingredientTypes = array(
-            'd' => array_filter($ingredients, function($ingredient) { return $ingredient['type_id'] == '1'; }),
-            'c' => array_filter($ingredients, function($ingredient) { return $ingredient['type_id'] == '2'; }),
-            'i' => array_filter($ingredients, function($ingredient) { return $ingredient['type_id'] == '3'; }),
-        );
-
-        $combinations = $this->generateCombinations($this->template, $ingredientTypes);
+        $ingredientsTypes = $this->getIngredientsTypes();
+        $types = $this->getTypes($ingredientsTypes, $ingredients);
+        $combinations = $this->generateCombinations($this->template, $types);
 
         $json = json_encode($combinations);
         $uniqueCombinations = json_decode($json, true);
@@ -88,6 +81,44 @@ final class DishBuilder
         }
 
         return $combinations;
+    }
+
+    /**
+     * @return array
+     */
+    public function getIngredientsTypes(): array
+    {
+        $iingridientsType = $this->repo->getIngredientTypes();
+        $ingredientsTypes = array();
+
+        foreach ($iingridientsType as $item) {
+            $ingredientsTypes[] = [
+                'code' => $item->code, 'type_id' => $item->id,
+            ];
+        }
+
+        return $ingredientsTypes;
+    }
+
+    /**
+     * @param array $ingredientsTypes
+     * @param array $ingredients
+     * @return array
+     */
+    public function getTypes(array $ingredientsTypes, array $ingredients): array
+    {
+        $types = [];
+
+        foreach ($ingredientsTypes as $ingredientType) {
+            $types[$ingredientType["code"]] =
+                array_filter($ingredients, function($ingredient) use ($ingredientType) {
+                    return $ingredient['type_id'] == $ingredientType["type_id"];
+                });
+        }
+
+        return array_map(function($v) {
+            return $v;
+        }, $types);
     }
 
     /**
